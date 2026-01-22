@@ -14,7 +14,6 @@ export function useRtdbCollection(collectionName) {
     loading.value = true
     error.value = null
 
-    // ✅ Optimization: read only active collection + limit the amount
     const q = query(dbRef($db, collectionName), limitToLast(50))
 
     unsubscribe = onValue(
