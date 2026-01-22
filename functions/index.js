@@ -1,7 +1,10 @@
 const admin = require("firebase-admin");
 const { onValueWritten } = require("firebase-functions/v2/database");
 
-admin.initializeApp();
+
+admin.initializeApp({
+  databaseURL: "http://127.0.0.1:9000/?ns=test-ead6f-default-rtdb",
+});
 
 exports.syncTaskReverseIndex = onValueWritten("/tasks/{taskId}", async (event) => {
   const taskId = event.params.taskId;
@@ -19,12 +22,12 @@ exports.syncTaskReverseIndex = onValueWritten("/tasks/{taskId}", async (event) =
     if (beforeProjectId) {
       updates[`/tasksByProject/${beforeProjectId}/${taskId}`] = null;
     }
-
     if (Object.keys(updates).length) {
       await admin.database().ref().update(updates);
     }
     return;
   }
+
 
   if (beforeProjectId && beforeProjectId !== afterProjectId) {
     updates[`/tasksByProject/${beforeProjectId}/${taskId}`] = null;
@@ -33,11 +36,6 @@ exports.syncTaskReverseIndex = onValueWritten("/tasks/{taskId}", async (event) =
 
   if (afterProjectId) {
     updates[`/tasksByProject/${afterProjectId}/${taskId}`] = true;
-  } else {
-
-    if (beforeProjectId) {
-      updates[`/tasksByProject/${beforeProjectId}/${taskId}`] = null;
-    }
   }
 
   if (Object.keys(updates).length) {
